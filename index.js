@@ -1,47 +1,55 @@
-var express = require("express");
+// Supports ES6
+// import { create, Whatsapp } from 'sulla';
+const sulla = require('sulla');
 
-const app = express();
-
-const handlebars = require('express-handlebars')
-const Sequelize = require('sequelize')
-
-
-//Config
-    //Template Engine
-        app.engine('handlebars',handlebars({defaultLayout:'main'}))
-        app.set('view engine','handlebars')
-
-    //Conexao com o banco de dados MYSQL
-        const sequelize = new Sequelize('sistemadecadastro','root','10440983924',{
-            host:"localhost",
-            dialect: 'mysql'
-    })
-
-//Rotas
-    app.get('/cad',function(req,res){
-        res.send('Rota de cadastro de posts')
+sulla.create().then((client) => start(client));  //client é o whatsapp
+/*Essa função conecta a api do WhatsApp*/ 
+function start(client) {
+    client.onMessage((message) => {
+      if (message.body === 'Hi') {
+        client.sendText(message.from, '👋 Hello from sulla!');  //sendText mensagem de texto
+      }
     });
-/*
-app.get("/",function(req,res){ //REQ RECEBE RES MANDA
-    //eviando um arquivo HTML
-    res.sendFile(__dirname + "/html/index.html"); //send server para enviar algo //__dirname é uma variavel que retorna o diretorio padrao
-});
+  }
 
-app.get("/sobre",function(req,res){
-    res.send.sendFile(__dirname+ "/html/sobre.html");
-});
+/*Armazenando os Dados diretamente no NodeJs (APRIMORAR PARA MONGO)*/ 
+var banco = {
+    user1:{
+        stage : 0
+    },
+    user2:{
+        stage : 0
+    }
+};
+/*Assim que o cliente fazer login é possivel saber em qual estado ele está*/
+var stages = {
+    0:{
+    descricao : "Boas Vindas",
+    obj : require("./0"), /*Apontando para o Arquivo 0.js*/
+    },
+    1:{
+        descricao : "Vendas",
+        obj : require("./1"),  /*Apontando para o Arquivo 1.js*/
+        },
+    2:{
+        descricao : "Resumo",
+        obj : require("./2"),
+        },
+    3:{
+        descricao : "Endereço",
+        obj : require("./3"),
+        },
+    4:{
+        descricao : "Enceramento",
+        obj : require("./4"),
+        },
+};
 
-app.get("/blog",function(req,res){
-    res.send("Bem-vindo ao meu blog");
-});
+/*Essa função mostra em qual estado o usuário se encontra*/
+function getStage(user) {
+    return banco[user].stage;
+}
 
-app.get("/ola/:cargo/:nome/:cor",function(req,res){  // /:nome é um parametro
-    // SO PODE USAR A FUNÇÃO SEND UMA VEZ 
-    res.send("<h1>Ola  " +req.params.nome+ "</h1>"+"<h2>Seu cargo e: "+req.params.cargo+"</h2>"+"<h3>Sua cor favorita e: "+req.params.cor+"</h2>"); 
-     //req recebe dados de uma requisição 
-});
+console.log(getStage("user1"));
 
-app.listen(8081,function(){
-    console.log("Servidor Rodando na url: https://localhost:8081");
-});
-*/
+
